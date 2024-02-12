@@ -1,9 +1,14 @@
 use std::process::Command;
 
 pub fn move_to_right_path() {
+    Command::new("rm")
+        .args(["-rf", "target/release"])
+        .output()
+        .expect("Failed to execute command");
+
     println!("Starting moving");
     let output = Command::new("mv")
-        .args(["-T", "temp/new-version/target/release", "target/release"])
+        .args(["-f", "temp/new-version/target/release", "target"])
         .output()
         .expect("Failed to execute command");
 

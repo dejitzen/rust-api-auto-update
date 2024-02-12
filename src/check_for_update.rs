@@ -12,7 +12,7 @@ fn download_and_install_new_version() {
     build_new_version::build_new_version();
     move_to_right_path::move_to_right_path();
     delete_temp_files::delete_temp_files();
-    restart_process::restart_process();
+    // restart_process::restart_process();
 }
 
 pub async fn check_for_update() {
@@ -20,6 +20,7 @@ pub async fn check_for_update() {
 
     let url = "https://raw.githubusercontent.com/dejitzen/rust-api-auto-update/main/Cargo.toml";
     if let Ok(remote_version) = fetch_toml_from_github::fetch_toml_from_github(url).await {
+        println!("Remote version: {}", remote_version);
         match compare(CURRENT_VERSION, &remote_version) {
             Ok(cmp) => match cmp {
                 Cmp::Lt => download_and_install_new_version(),

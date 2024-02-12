@@ -3,7 +3,7 @@ use std::process::Command;
 pub fn move_to_right_path() {
     println!("Starting moving");
     let output = Command::new("mv")
-        .args(["temp/new-version/target/release", "target/release"])
+        .args(["-T", "temp/new-version/target/release", "target/release"])
         .output()
         .expect("Failed to execute command");
 

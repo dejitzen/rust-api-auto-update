@@ -1165,7 +1165,7 @@ dependencies = [
 
 [[package]]
 name = "rust-api-auto-update"
-version = "0.0.1"
+version = "1.0.1"
 dependencies = [
  "actix-web",
  "clokwerk",

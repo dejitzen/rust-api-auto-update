@@ -14,11 +14,10 @@ async fn hello() -> impl Responder {
 
 fn start_scheduler(rt: Arc<Mutex<Runtime>>) {
     let mut scheduler = Scheduler::new();
-    scheduler.every(5.seconds()).run(move || {
+    scheduler.every(5.minutes()).run(move || {
         let rt = Arc::clone(&rt);
         let rt = rt.lock().unwrap();
         rt.spawn(async {
-            println!("Scheduling");
             check_for_update().await;
         });
     });
@@ -31,7 +30,11 @@ fn start_scheduler(rt: Arc<Mutex<Runtime>>) {
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
+    const CURRENT_VERSION: &str = env!("CARGO_PKG_VERSION");
+    println!("Current version: {}", CURRENT_VERSION);
+
     let rt = Arc::new(Mutex::new(Runtime::new().unwrap()));
+    check_for_update().await;
     start_scheduler(rt.clone());
 
     HttpServer::new(move || App::new().route("/hello", web::get().to(hello)))

@@ -2,6 +2,11 @@
 name = "rust-api-auto-update"
 version = "1.0.0"
 edition = "2021"
+authors = ["Deji Abodunrin <dejitzen@gmail.com>"]
+license = "MIT"
+description = "Rust Auto-Updater Library"
+readme = "README.md"
+repository = "https://github.com/dejitzen/rust-api-auto-update"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 

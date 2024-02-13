@@ -2,7 +2,7 @@ use std::process::Command;
 
 pub fn delete_temp_files() {
     let output = Command::new("rm")
-        .args(["-rf", "temp/new-version"])
+        .args(["-rf", "temp"])
         .output()
         .expect("Failed to execute command");
 

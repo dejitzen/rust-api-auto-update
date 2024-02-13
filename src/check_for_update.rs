@@ -12,7 +12,7 @@ fn download_and_install_new_version() {
     build_new_version::build_new_version();
     move_to_right_path::move_to_right_path();
     delete_temp_files::delete_temp_files();
-    // restart_process::restart_process();
+    restart_process::restart_process();
 }
 
 pub async fn check_for_update() {

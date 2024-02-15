@@ -1,38 +1,53 @@
-mod build_new_version;
-mod clone_project;
-mod delete_temp_files;
-mod fetch_toml_from_github;
-mod move_to_right_path;
-mod restart_process;
-use std::env;
-use version_compare::{compare, Cmp};
+mod download_and_verify_update;
+use reqwest;
+use serde::{Deserialize, Serialize};
+use std::error::Error;
+use std::io::{Read, Write};
 
-fn download_and_install_new_version() {
-    clone_project::clone_project();
-    build_new_version::build_new_version();
-    move_to_right_path::move_to_right_path();
-    delete_temp_files::delete_temp_files();
-    restart_process::restart_process();
+#[derive(Serialize, Deserialize, Debug)]
+pub struct UpdateMetadata {
+    version: String,
+    url: String,
+    checksum: String,
 }
 
-pub async fn check_for_update() {
-    const CURRENT_VERSION: &str = env!("CARGO_PKG_VERSION");
+async fn download_and_verify_update(metadata: &UpdateMetadata) -> Result<String, &'static str> {
+    let download_path = download_update(metadata).await?;
+    if verify_update(&download_path, &metadata.checksum) {
+        Ok(download_path)
+    } else {
+        Err("Verification failed")
+    }
+}
 
-    let url = "https://raw.githubusercontent.com/dejitzen/rust-api-auto-update/main/Cargo.toml";
-    if let Ok(remote_version) = fetch_toml_from_github::fetch_toml_from_github(url).await {
-        println!("Remote version: {}", remote_version);
-        match compare(CURRENT_VERSION, &remote_version) {
-            Ok(cmp) => match cmp {
-                Cmp::Lt => download_and_install_new_version(),
-                Cmp::Eq => println!("You are using the latest version."),
-                Cmp::Gt => println!("You are using a newer version than available."),
-                _ => println!("Unexpected comparison result."),
+pub async fn check_for_updates(current_version: &str, metadata_url: &str) -> Result<Option<String>, Box<dyn Error>> {
+    let response = reqwest::get(metadata_url).await?;
+    let metadata: UpdateMetadata = response.json().await?;
+    if metadata.version > current_version {
+        println!("Update available: {}", metadata.version);
+        // Directly call download_and_verify_update here
+        match download_and_verify_update(&metadata).await {
+            Ok(download_path) => {
+                println!("Update downloaded and verified at: {}", download_path);
+                Ok(Some(download_path))
             },
-            Err(_err) => {
-                println!("Failed to compare versions");
-            }
+            Err(e) => {
+                println!("Failed to download or verify update: {}", e);
+                Err(e.into())
+            },
         }
     } else {
-        println!("Failed to fetch remote version.");
+        println!("No updates available or failed to compare versions.");
+        Ok(None)
+    }
+}
+
+
+#[tokio::main]
+async fn main() {
+    let current_version = "your_current_version";
+    let metadata_url = "your_metadata_url";
+    if let Err(e) = check_for_updates(current_version, metadata_url).await {
+        eprintln!("Error checking for updates: {}", e);
     }
 }
